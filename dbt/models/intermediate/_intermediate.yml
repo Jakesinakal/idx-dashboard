@@ -1,0 +1,27 @@
+version: 2
+
+models:
+  - name: int_stock_with_returns
+    description: "Stock data enriched with daily return, 7d and 30d moving averages per ticker."
+    columns:
+      - name: date
+        tests: [not_null]
+      - name: ticker
+        tests: [not_null]
+      - name: close
+        tests: [not_null]
+      - name: daily_return
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: -35
+                max_value: 35
+                row_condition: "daily_return is not null"
+
+  - name: int_macro_with_indicators
+    description: "Macro data enriched with 30d IHSG volatility and IDR strength index."
+    columns:
+      - name: date
+        tests:
+          - not_null
+          - unique

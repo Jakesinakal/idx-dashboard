@@ -1,0 +1,47 @@
+version: 2
+
+sources:
+  - name: financial_data
+    database: "{{ env_var('GCP_PROJECT_ID', 'etl-financial-project') }}"
+    schema: "{{ env_var('BQ_DATASET', 'financial_data') }}"
+    description: "Raw tables loaded by the Dagster ETL pipeline."
+    tables:
+      - name: stock_performance
+        description: "Individual IDX stock rows from extract_ihsg (^JKSE excluded)."
+        config:
+          meta:
+            dagster:
+              asset_key: ["bq_stock_performance"]
+        columns:
+          - name: date
+            description: "Trading date (YYYY-MM-DD string)"
+          - name: ticker
+          - name: name
+          - name: close
+          - name: volume
+          - name: year
+          - name: month
+
+      - name: macro_economic_daily
+        description: "Joined IHSG + FRED + currency data, one row per trading day."
+        config:
+          meta:
+            dagster:
+              asset_key: ["bq_macro_economic_daily"]
+        columns:
+          - name: date
+          - name: ihsg_close
+          - name: ihsg_volume
+          - name: cpi_us
+            description: "US CPI (monthly, forward-filled). First ~47 rows may be null."
+          - name: fed_rate
+            description: "US Fed Funds Rate (monthly, forward-filled). First ~47 rows may be null."
+          - name: usd_idr_fred
+            description: "USD/IDR from FRED — different units from yfinance; excluded in staging."
+          - name: usd_idr
+          - name: eur_idr
+          - name: jpy_idr
+          - name: ihsg_return_pct
+          - name: year
+          - name: month
+          - name: week

@@ -1,0 +1,15 @@
+yfinance
+pandas
+requests
+feedparser
+python-dotenv
+google-cloud-bigquery
+google-cloud-storage
+google-genai
+pyarrow
+dagster
+dagster-webserver
+dagster-dbt
+dbt-core
+dbt-bigquery
+# dbt-expectations is a dbt Hub package, not PyPI — install via: dbt deps

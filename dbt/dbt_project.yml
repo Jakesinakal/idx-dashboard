@@ -1,0 +1,22 @@
+name: finance_data
+version: "1.0.0"
+config-version: 2
+
+profile: finance_data
+
+model-paths: ["models"]
+test-paths:  ["tests"]
+macro-paths: ["macros"]
+seed-paths:  ["seeds"]
+
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  finance_data:
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: ephemeral
+    marts:
+      +materialized: table

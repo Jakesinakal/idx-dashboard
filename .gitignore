@@ -1,0 +1,35 @@
+# ── Secrets / credentials ─────────────────────────────
+credentials/
+.env
+.env.*
+!.env.example
+
+# ── Python ────────────────────────────────────────────
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# ── Dagster ───────────────────────────────────────────
+.tmp_dagster_home*/
+*.db
+
+# ── dbt ───────────────────────────────────────────────
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+dbt/.user.yml
+
+# ── Node / Next.js (frontend) ─────────────────────────
+node_modules/
+.next/
+out/
+.vercel
+*.tsbuildinfo
+
+# ── Logs ──────────────────────────────────────────────
+logs/
+*.log
+
+# ── OS ────────────────────────────────────────────────
+.DS_Store

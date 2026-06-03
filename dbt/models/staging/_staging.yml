@@ -1,0 +1,42 @@
+version: 2
+
+models:
+  - name: stg_stock_performance
+    description: "Typed and cleaned stock performance view. One row per (date, ticker)."
+    columns:
+      - name: date
+        tests: [not_null]
+      - name: ticker
+        tests: [not_null]
+      - name: name
+        tests: [not_null]
+      - name: close
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 0
+                strictly: true
+                row_condition: "close is not null"
+      - name: volume
+        tests: [not_null]
+
+  - name: stg_macro_economic
+    description: >
+      Typed and cleaned macro daily view. usd_idr_fred dropped. FRED columns
+      forward-filled so cpi_us / fed_rate are non-null after the first trading day
+      that has a FRED observation.
+    columns:
+      - name: date
+        tests:
+          - not_null
+          - unique
+      - name: ihsg_close
+        tests: [not_null]
+      - name: usd_idr
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: 13000
+                max_value: 20000

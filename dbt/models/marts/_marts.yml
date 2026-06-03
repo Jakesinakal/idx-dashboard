@@ -1,0 +1,68 @@
+version: 2
+
+models:
+  - name: fct_daily_market
+    description: >
+      Daily market fact table: each row is one stock on one trading day, enriched
+      with returns, moving averages, and macro context. Partitioned by date,
+      clustered by ticker.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [date, ticker]
+    columns:
+      - name: date
+        tests: [not_null]
+      - name: ticker
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_ticker')
+                field: ticker
+      - name: close
+        tests: [not_null]
+      - name: daily_return
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: -35
+                max_value: 35
+                row_condition: "daily_return is not null"
+
+  - name: dim_ticker
+    description: "Static dimension: the 4 IDX stocks tracked by the pipeline."
+    columns:
+      - name: ticker
+        tests:
+          - not_null
+          - unique
+      - name: sector
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [Banking, Telecom, Automotive]
+
+  - name: mart_monthly_performance
+    description: >
+      Monthly aggregated stock metrics for Looker Studio dashboards.
+      Partitioned by month_start (first day of each month).
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [year, month, ticker]
+    columns:
+      - name: year
+        tests: [not_null]
+      - name: month
+        tests: [not_null]
+      - name: ticker
+        tests: [not_null]
+      - name: avg_daily_return
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              arguments:
+                min_value: -35
+                max_value: 35
+                row_condition: "avg_daily_return is not null"
