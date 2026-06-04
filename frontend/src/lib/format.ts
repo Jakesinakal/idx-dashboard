@@ -31,6 +31,16 @@ export function monthLabel(iso: string): string {
   return `${d} ${MONTH_SHORT[(m - 1 + 12) % 12]}`;
 }
 
+const DAY_ID = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+
+// "2026-06-02" -> "Selasa, 2 Jun 2026"
+export function fullDateLabel(iso: string): string {
+  const [y, m, d] = iso.split("T")[0].split("-").map(Number);
+  if (!y || !m || !d) return "";
+  const day = DAY_ID[new Date(Date.UTC(y, m - 1, d)).getUTCDay()];
+  return `${day}, ${d} ${MONTH_SHORT[(m - 1 + 12) % 12]} ${y}`;
+}
+
 // ISO timestamp -> compact relative age, e.g. "5 jam", "2 hari".
 export function relativeTime(iso: string): string {
   const then = new Date(iso).getTime();

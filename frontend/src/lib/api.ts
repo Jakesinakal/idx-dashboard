@@ -19,7 +19,7 @@ import type {
   Universe,
   Vs,
 } from "./types";
-import { monthLabel, relativeTime } from "./format";
+import { fullDateLabel, monthLabel, relativeTime } from "./format";
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(/\/+$/, "");
 
@@ -30,14 +30,17 @@ class ApiError extends Error {
 }
 
 async function getJson<T>(path: string): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, { cache: "no-store" });
+  // Cached ~5 min: the warehouse only updates once a day (Dagster run), so
+  // caching makes navigation near-instant and lets Next dedupe the same fetch
+  // across the layout + page — with negligible staleness.
+  const res = await fetch(`${API_URL}${path}`, { next: { revalidate: 300 } });
   if (!res.ok) throw new ApiError(`API ${path} -> ${res.status}`, res.status);
   return (await res.json()) as T;
 }
 
-// Coerce an arbitrary searchParam into a valid universe (default LQ45).
+// Coerce an arbitrary searchParam into a valid universe (default Semua).
 export function normalizeUniverse(raw: string | string[] | undefined): Universe {
-  return raw === "JII70" || raw === "Semua" ? raw : "LQ45";
+  return raw === "LQ45" || raw === "JII70" ? raw : "Semua";
 }
 
 // The backend uses "ALL" where the UI shows "Semua".
@@ -147,7 +150,19 @@ function usdIdrChangePct(series: RawCurrencyPoint[]): number | null {
 
 // ---- Page-level loaders ----
 
-export async function getBerandaData(universe: Universe = "LQ45"): Promise<BerandaData> {
+// Latest data date for the header, formatted "Selasa, 2 Jun 2026". Reuses the
+// same cached /api/snapshot fetch as the pages, so request memoization makes it
+// free when a page already loads the snapshot. Resilient (null on failure).
+export async function getHeaderDate(): Promise<string | null> {
+  try {
+    const snap = await getJson<{ date?: string }>("/api/snapshot");
+    return snap.date ? fullDateLabel(snap.date) : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function getBerandaData(universe: Universe = "Semua"): Promise<BerandaData> {
   const u = toBackendUniverse(universe);
   // snapshot is required (it anchors the KPIs); the rest degrade gracefully.
   const [snap, hist, movers, news, briefing, currency] = await Promise.all([
@@ -205,7 +220,7 @@ export async function getBerandaData(universe: Universe = "LQ45"): Promise<Beran
   };
 }
 
-export async function getScreenerData(universe: Universe = "LQ45"): Promise<ScreenerRow[]> {
+export async function getScreenerData(universe: Universe = "Semua"): Promise<ScreenerRow[]> {
   const u = toBackendUniverse(universe);
   // A universe with no stocks (e.g. JII70 before it's populated) yields a 404 —
   // treat that as "empty", but let any other failure bubble up to the error UI.

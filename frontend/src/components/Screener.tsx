@@ -2,10 +2,11 @@
 
 // ============ HALAMAN 2 — SCREENER ============
 import { useMemo, useState } from "react";
-import { ChevronDown, ChevronUp, Search, TrendingDown, TrendingUp } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Check, ChevronDown, ChevronUp, Search, TrendingDown, TrendingUp } from "lucide-react";
 import { fmtInt, fmtPct } from "@/lib/format";
 import { SignalChip, VsChip } from "@/components/primitives";
-import type { ScreenerRow } from "@/lib/types";
+import { UNIVERSES, type ScreenerRow, type Universe } from "@/lib/types";
 
 type SortKey = keyof ScreenerRow;
 type Align = "left" | "right" | "center";
@@ -17,17 +18,26 @@ const COLS: { k: SortKey; label: string; align: Align }[] = [
   { k: "price", label: "Harga", align: "right" },
   { k: "pct", label: "%1H", align: "right" },
   { k: "rsi", label: "RSI", align: "right" },
-  { k: "trend", label: "MA Trend", align: "left" },
+  { k: "trend", label: "MA Trend", align: "right" },
   { k: "mom", label: "Momentum", align: "right" },
   { k: "sig", label: "Sinyal", align: "center" },
   { k: "vs", label: "vs IHSG", align: "center" },
 ];
 
-export default function Screener({ rows: allRows }: { rows: ScreenerRow[] }) {
+export default function Screener({ rows: allRows, universe }: { rows: ScreenerRow[]; universe: Universe }) {
+  const router = useRouter();
+  const [uniOpen, setUniOpen] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("t");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [sigFilter, setSigFilter] = useState<string>("ALL");
   const [q, setQ] = useState("");
+
+  // Universe drives a server re-fetch via the URL (avoids a browser→API call,
+  // so CORS never comes into play).
+  function selectUniverse(u: Universe) {
+    setUniOpen(false);
+    router.push(u === "Semua" ? "/screener" : `/screener?u=${u}`);
+  }
 
   const rows = useMemo(() => {
     let r = allRows.slice();
@@ -62,6 +72,34 @@ export default function Screener({ rows: allRows }: { rows: ScreenerRow[] }) {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {/* universe filter */}
+          <div className="relative">
+            <button
+              onClick={() => setUniOpen((o) => !o)}
+              onBlur={() => setTimeout(() => setUniOpen(false), 120)}
+              className="flex h-9 items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 font-mono text-sm text-zinc-200 transition-colors hover:border-zinc-700"
+            >
+              {universe}
+              <ChevronDown size={14} className="text-zinc-500" />
+            </button>
+            {uniOpen ? (
+              <div className="absolute left-0 top-full z-30 mt-1.5 w-32 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900 py-1 shadow-xl shadow-black/40">
+                {UNIVERSES.map((u) => (
+                  <button
+                    key={u}
+                    onMouseDown={() => selectUniverse(u)}
+                    className={`flex w-full items-center justify-between px-3 py-1.5 text-left font-mono text-xs transition-colors hover:bg-zinc-800 ${
+                      universe === u ? "text-violet-300" : "text-zinc-300"
+                    }`}
+                  >
+                    {u}
+                    {universe === u ? <Check size={13} /> : null}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+
           {/* search */}
           <div className="relative">
             <Search size={15} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500" />
@@ -129,7 +167,7 @@ export default function Screener({ rows: allRows }: { rows: ScreenerRow[] }) {
                     {r.rsi}
                   </span>
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 text-right">
                   <span className={`inline-flex items-center gap-1 font-mono text-xs ${r.trend === "bull" ? "text-emerald-400" : "text-rose-400"}`}>
                     {r.trend === "bull" ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
                     {r.trend === "bull" ? "Bull" : "Bear"}
