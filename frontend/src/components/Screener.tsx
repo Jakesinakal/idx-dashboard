@@ -1,0 +1,157 @@
+"use client";
+
+// ============ HALAMAN 2 — SCREENER ============
+import { useMemo, useState } from "react";
+import { ChevronDown, ChevronUp, Search, TrendingDown, TrendingUp } from "lucide-react";
+import { fmtInt, fmtPct } from "@/lib/format";
+import { SignalChip, VsChip } from "@/components/primitives";
+import type { ScreenerRow } from "@/lib/types";
+
+type SortKey = keyof ScreenerRow;
+type Align = "left" | "right" | "center";
+
+const SIG_TABS = ["ALL", "BUY", "HOLD", "SELL", "OB"] as const;
+
+const COLS: { k: SortKey; label: string; align: Align }[] = [
+  { k: "t", label: "Ticker", align: "left" },
+  { k: "price", label: "Harga", align: "right" },
+  { k: "pct", label: "%1H", align: "right" },
+  { k: "rsi", label: "RSI", align: "right" },
+  { k: "trend", label: "MA Trend", align: "left" },
+  { k: "mom", label: "Momentum", align: "right" },
+  { k: "sig", label: "Sinyal", align: "center" },
+  { k: "vs", label: "vs IHSG", align: "center" },
+];
+
+export default function Screener({ rows: allRows }: { rows: ScreenerRow[] }) {
+  const [sortKey, setSortKey] = useState<SortKey>("t");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [sigFilter, setSigFilter] = useState<string>("ALL");
+  const [q, setQ] = useState("");
+
+  const rows = useMemo(() => {
+    let r = allRows.slice();
+    if (sigFilter !== "ALL") r = r.filter((x) => x.sig === sigFilter);
+    if (q.trim()) r = r.filter((x) => x.t.toLowerCase().includes(q.trim().toLowerCase()));
+    const dir = sortDir === "asc" ? 1 : -1;
+    r.sort((a, b) => {
+      const av = a[sortKey];
+      const bv = b[sortKey];
+      if (typeof av === "string" && typeof bv === "string") return av.localeCompare(bv) * dir;
+      return ((av as number) - (bv as number)) * dir;
+    });
+    return r;
+  }, [allRows, sortKey, sortDir, sigFilter, q]);
+
+  function toggleSort(k: SortKey) {
+    if (sortKey === k) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(k);
+      setSortDir(k === "t" ? "asc" : "desc");
+    }
+  }
+
+  return (
+    <div className="mx-auto max-w-[1180px] px-6 py-8 sm:px-10">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="text-lg font-medium text-zinc-100">Screener</h2>
+          <p className="text-sm text-zinc-500">
+            {rows.length} dari {allRows.length} saham · klik header untuk mengurutkan
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {/* search */}
+          <div className="relative">
+            <Search size={15} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500" />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Cari ticker…"
+              className="h-9 w-40 rounded-lg border border-zinc-800 bg-zinc-900/60 pl-8 pr-3 font-mono text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-violet-500/50 focus:outline-none focus:ring-1 focus:ring-violet-500/30"
+            />
+          </div>
+          {/* signal filter */}
+          <div className="flex items-center rounded-lg border border-zinc-800 bg-zinc-900/60 p-0.5">
+            {SIG_TABS.map((s) => (
+              <button
+                key={s}
+                onClick={() => setSigFilter(s)}
+                className={`rounded-md px-2.5 py-1.5 font-mono text-xs transition-colors ${
+                  sigFilter === s ? "bg-zinc-800 text-zinc-100" : "text-zinc-500 hover:text-zinc-300"
+                }`}
+              >
+                {s === "ALL" ? "Semua" : s}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* table */}
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse text-sm">
+          <thead>
+            <tr className="border-y border-zinc-800">
+              {COLS.map((c) => (
+                <th
+                  key={c.k}
+                  onClick={() => toggleSort(c.k)}
+                  className={`cursor-pointer select-none whitespace-nowrap px-4 py-2.5 text-xs font-medium uppercase tracking-wider text-zinc-500 transition-colors hover:text-zinc-300 ${
+                    c.align === "right" ? "text-right" : c.align === "center" ? "text-center" : "text-left"
+                  }`}
+                >
+                  <span className={`inline-flex items-center gap-1 ${c.align === "right" ? "flex-row-reverse" : ""}`}>
+                    {c.label}
+                    {sortKey === c.k ? (
+                      sortDir === "asc" ? (
+                        <ChevronUp size={13} className="text-violet-400" />
+                      ) : (
+                        <ChevronDown size={13} className="text-violet-400" />
+                      )
+                    ) : null}
+                  </span>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.t} className="border-b border-zinc-800/60 transition-colors hover:bg-zinc-900/50">
+                <td className="px-4 py-3 font-mono font-medium text-zinc-100">{r.t}</td>
+                <td className="px-4 py-3 text-right font-mono tabular-nums text-zinc-200">{fmtInt(r.price)}</td>
+                <td className={`px-4 py-3 text-right font-mono tabular-nums ${r.pct >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                  {fmtPct(r.pct, 1)}
+                </td>
+                <td className="px-4 py-3 text-right font-mono tabular-nums">
+                  <span className={r.rsi >= 70 ? "text-amber-400" : r.rsi <= 30 ? "text-rose-400" : "text-zinc-300"}>
+                    {r.rsi}
+                  </span>
+                </td>
+                <td className="px-4 py-3">
+                  <span className={`inline-flex items-center gap-1 font-mono text-xs ${r.trend === "bull" ? "text-emerald-400" : "text-rose-400"}`}>
+                    {r.trend === "bull" ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
+                    {r.trend === "bull" ? "Bull" : "Bear"}
+                  </span>
+                </td>
+                <td className={`px-4 py-3 text-right font-mono tabular-nums ${r.mom >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                  {fmtPct(r.mom, 1)}
+                </td>
+                <td className="px-4 py-3 text-center">
+                  <SignalChip sig={r.sig} />
+                </td>
+                <td className="px-4 py-3 text-center">
+                  <VsChip vs={r.vs} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {rows.length === 0 ? (
+          <div className="py-16 text-center text-sm text-zinc-500">Tidak ada saham yang cocok.</div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
