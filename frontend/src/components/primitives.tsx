@@ -1,5 +1,4 @@
 // ============ Shared UI primitives ============
-import { ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { fmtPct } from "@/lib/format";
 import type { Signal, Vs } from "@/lib/types";
 
@@ -42,20 +41,15 @@ export function SignalChip({ sig }: { sig: Signal }) {
 export function Delta({
   pct,
   decimals = 2,
-  showArrow = true,
   className = "",
 }: {
   pct: number;
   decimals?: number;
-  showArrow?: boolean;
   className?: string;
 }) {
-  const up = pct >= 0;
-  const Arrow = up ? ArrowUpRight : ArrowDownRight;
-  const color = up ? "text-emerald-400" : "text-rose-400";
+  const color = pct >= 0 ? "text-emerald-400" : "text-rose-400";
   return (
-    <span className={`inline-flex items-center gap-0.5 font-mono tabular-nums ${color} ${className}`}>
-      {showArrow ? <Arrow size={14} strokeWidth={2.4} /> : null}
+    <span className={`font-mono tabular-nums ${color} ${className}`}>
       {fmtPct(pct, decimals)}
     </span>
   );

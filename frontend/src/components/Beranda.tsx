@@ -1,5 +1,4 @@
 // ============ HALAMAN 1 — BERANDA ============
-import { ArrowDownRight, ArrowUpRight, Sparkles, TrendingDown, TrendingUp } from "lucide-react";
 import { fmt, fmtInt, fmtPct, fmtSigned } from "@/lib/format";
 import { Delta, SentChip } from "@/components/primitives";
 import { IhsgChart } from "@/components/IhsgChart";
@@ -26,7 +25,6 @@ export default function Beranda({ data }: { data: BerandaData }) {
   const rupiahWeaker = usd.pct != null && usd.pct > 0;
   const rupiahStronger = usd.pct != null && usd.pct < 0;
   const usdColor = rupiahWeaker ? "text-rose-400" : rupiahStronger ? "text-emerald-400" : "text-zinc-400";
-  const UsdArrow = rupiahWeaker ? ArrowDownRight : ArrowUpRight;
   const usdLabel = rupiahWeaker ? "Rupiah melemah" : rupiahStronger ? "Rupiah menguat" : "";
 
   // Sentimen KPI
@@ -35,7 +33,7 @@ export default function Beranda({ data }: { data: BerandaData }) {
 
   return (
     <div className="mx-auto max-w-[1180px] px-6 py-8 sm:px-10">
-      {/* HERO — Briefing AI */}
+      {/* HERO — Daily Summary */}
       <section
         className="relative overflow-hidden rounded-2xl border border-violet-500/20 p-7 sm:p-9"
         style={{ backgroundImage: "linear-gradient(to bottom, rgba(139,92,246,0.07), transparent)" }}
@@ -43,11 +41,9 @@ export default function Beranda({ data }: { data: BerandaData }) {
         <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-violet-500/10 blur-3xl" />
         <div className="relative">
           <div className="mb-4 flex items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-400/40 bg-violet-400/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-widest text-violet-300">
-              <Sparkles size={13} />
-              AI
+            <span className="inline-flex items-center rounded-full border border-violet-400/40 bg-violet-400/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-widest text-violet-300">
+              Daily Summary
             </span>
-            <h2 className="text-sm font-medium tracking-wide text-zinc-300">Briefing AI</h2>
             {mood != null ? (
               <span className={`ml-auto inline-flex items-center gap-2 whitespace-nowrap rounded-full border px-3 py-1 text-xs ${moodChipCls}`}>
                 <span className="font-mono">mood {fmtSigned(mood, 2)}</span>
@@ -73,8 +69,7 @@ export default function Beranda({ data }: { data: BerandaData }) {
           <div className="flex items-baseline gap-2">
             <span className="font-mono text-2xl font-semibold tabular-nums text-zinc-50">{fmtInt(usd.value)}</span>
             {usd.pct != null ? (
-              <span className={`inline-flex items-center gap-0.5 font-mono text-sm tabular-nums ${usdColor}`}>
-                <UsdArrow size={14} strokeWidth={2.4} />
+              <span className={`font-mono text-sm tabular-nums ${usdColor}`}>
                 {fmtPct(usd.pct)}
               </span>
             ) : null}
@@ -133,8 +128,8 @@ export default function Beranda({ data }: { data: BerandaData }) {
           <h3 className="mb-4 text-sm font-medium text-zinc-200">Top Movers</h3>
           <div className="space-y-5">
             <div>
-              <div className="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-emerald-400">
-                <TrendingUp size={14} /> Gainers
+              <div className="mb-2 text-xs font-medium uppercase tracking-wider text-emerald-400">
+                Gainers
               </div>
               <div className="divide-y divide-zinc-800/80 border-y border-zinc-800/80">
                 {gainers.map((g) => (
@@ -143,8 +138,8 @@ export default function Beranda({ data }: { data: BerandaData }) {
               </div>
             </div>
             <div>
-              <div className="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-rose-400">
-                <TrendingDown size={14} /> Losers
+              <div className="mb-2 text-xs font-medium uppercase tracking-wider text-rose-400">
+                Losers
               </div>
               <div className="divide-y divide-zinc-800/80 border-y border-zinc-800/80">
                 {losers.map((g) => (

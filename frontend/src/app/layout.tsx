@@ -7,8 +7,8 @@ const geistSans = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
 const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
 
 export const metadata: Metadata = {
-  title: "IDX Intelligence",
-  description: "Intelijen pasar saham IDX — briefing AI, screener & sinyal teknikal.",
+  title: "VanStocks",
+  description: "VanStocks — pasar saham IDX: ringkasan harian, screener & sinyal teknikal.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

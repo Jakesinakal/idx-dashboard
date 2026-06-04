@@ -3,7 +3,7 @@
 // ============ HALAMAN 2 — SCREENER ============
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, ChevronDown, ChevronUp, Search, TrendingDown, TrendingUp } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Search } from "lucide-react";
 import { fmtInt, fmtPct } from "@/lib/format";
 import { SignalChip, VsChip } from "@/components/primitives";
 import { UNIVERSES, type ScreenerRow, type Universe } from "@/lib/types";
@@ -168,8 +168,7 @@ export default function Screener({ rows: allRows, universe }: { rows: ScreenerRo
                   </span>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <span className={`inline-flex items-center gap-1 font-mono text-xs ${r.trend === "bull" ? "text-emerald-400" : "text-rose-400"}`}>
-                    {r.trend === "bull" ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
+                  <span className={`font-mono text-xs ${r.trend === "bull" ? "text-emerald-400" : "text-rose-400"}`}>
                     {r.trend === "bull" ? "Bull" : "Bear"}
                   </span>
                 </td>
