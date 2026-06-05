@@ -58,26 +58,20 @@ export default function Beranda({ data }: { data: BerandaData }) {
       </section>
 
       {/* KPI row */}
-      <section className="mt-8 grid grid-cols-2 divide-zinc-800 border-y border-zinc-800 lg:grid-cols-4 lg:divide-x">
+      <section className="mt-8 grid grid-cols-2 gap-px border-y border-zinc-800 bg-zinc-800 lg:grid-cols-4">
         <Kpi label="IHSG">
-          <div className="flex items-baseline gap-2">
-            <span className="font-mono text-2xl font-semibold tabular-nums text-zinc-50">{fmt(kpis.ihsg.value)}</span>
-            <Delta pct={kpis.ihsg.pct} />
-          </div>
+          <div className="font-mono text-lg font-semibold tabular-nums text-zinc-50 sm:text-2xl">{fmt(kpis.ihsg.value)}</div>
+          <Delta pct={kpis.ihsg.pct} className="mt-0.5 block text-sm" />
         </Kpi>
         <Kpi label="USD / IDR">
-          <div className="flex items-baseline gap-2">
-            <span className="font-mono text-2xl font-semibold tabular-nums text-zinc-50">{fmtInt(usd.value)}</span>
-            {usd.pct != null ? (
-              <span className={`font-mono text-sm tabular-nums ${usdColor}`}>
-                {fmtPct(usd.pct)}
-              </span>
-            ) : null}
-          </div>
-          {usdLabel ? <span className="mt-1 text-xs text-zinc-500">{usdLabel}</span> : null}
+          <div className="font-mono text-lg font-semibold tabular-nums text-zinc-50 sm:text-2xl">{fmtInt(usd.value)}</div>
+          {usd.pct != null ? (
+            <span className={`mt-0.5 block font-mono text-sm tabular-nums ${usdColor}`}>{fmtPct(usd.pct)}</span>
+          ) : null}
+          {usdLabel ? <span className="mt-1 block text-xs text-zinc-500">{usdLabel}</span> : null}
         </Kpi>
         <Kpi label="Breadth">
-          <div className="font-mono text-2xl font-semibold tabular-nums text-zinc-50">
+          <div className="font-mono text-lg font-semibold tabular-nums text-zinc-50 sm:text-2xl">
             <span className="text-emerald-400">{b.up}</span>
             <span className="text-zinc-600"> / </span>
             <span className="text-rose-400">{b.down}</span>
@@ -92,10 +86,8 @@ export default function Beranda({ data }: { data: BerandaData }) {
           <span className="mt-1.5 block text-xs text-zinc-500">naik · tetap · turun</span>
         </Kpi>
         <Kpi label="Sentimen">
-          <div className="flex items-baseline gap-2">
-            <span className={`font-mono text-2xl font-semibold tabular-nums ${sentColor}`}>{fmtSigned(sent.score, 2)}</span>
-            <span className="text-xs text-zinc-500">{sentLabel}</span>
-          </div>
+          <div className={`font-mono text-lg font-semibold tabular-nums sm:text-2xl ${sentColor}`}>{fmtSigned(sent.score, 2)}</div>
+          <span className="mt-0.5 block text-xs text-zinc-500">{sentLabel}</span>
           <span className="mt-1.5 block font-mono text-xs text-zinc-500">
             <span className="text-emerald-400">{sent.pos} pos</span> ·{" "}
             <span className="text-rose-400">{sent.neg} neg</span> ·{" "}
@@ -177,7 +169,7 @@ export default function Beranda({ data }: { data: BerandaData }) {
 
 function Kpi({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="px-0 py-4 lg:px-6 lg:first:pl-0">
+    <div className="bg-zinc-950 px-3 py-4 lg:px-6 lg:first:pl-0">
       <div className="mb-1.5 text-xs font-medium uppercase tracking-wider text-zinc-500">{label}</div>
       {children}
     </div>

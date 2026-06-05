@@ -47,6 +47,9 @@ def extract_currency(start_date: str = None, end_date: str = None) -> pd.DataFra
 
     print(f"[Currency] Extracting data from {start_date} to {end_date}")
 
+    # yfinance treats `end` as EXCLUSIVE; bump it by one day so end_date is included.
+    end_query = (datetime.strptime(end_date, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
+
     col_names = list(CURRENCY_TICKERS.values())
     merged: pd.DataFrame | None = None
 
@@ -54,7 +57,7 @@ def extract_currency(start_date: str = None, end_date: str = None) -> pd.DataFra
         try:
             print(f"[Currency] Downloading {ticker} -> {col_name} ...")
             t = yf.Ticker(ticker)
-            hist = t.history(start=start_date, end=end_date)
+            hist = t.history(start=start_date, end=end_query)
 
             if hist.empty:
                 print(f"[Currency] WARNING: No data for {ticker}, skipping.")

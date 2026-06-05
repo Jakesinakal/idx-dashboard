@@ -124,11 +124,41 @@ export default function Screener({ rows: allRows, universe }: { rows: ScreenerRo
               </button>
             ))}
           </div>
+
+          {/* mobile sort — desktop uses the clickable table headers instead */}
+          <div className="flex w-full items-center gap-2 sm:hidden">
+            <span className="shrink-0 text-xs text-zinc-500">Urut</span>
+            <select
+              value={sortKey}
+              onChange={(e) => setSortKey(e.target.value as SortKey)}
+              className="h-9 flex-1 rounded-lg border border-zinc-800 bg-zinc-900/60 px-2 font-mono text-sm text-zinc-200 focus:border-violet-500/50 focus:outline-none"
+            >
+              {COLS.map((c) => (
+                <option key={c.k} value={c.k}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+              aria-label="Balik arah urutan"
+              className="flex h-9 shrink-0 items-center rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 text-zinc-200 transition-colors hover:border-zinc-700"
+            >
+              {sortDir === "asc" ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* table */}
-      <div className="overflow-x-auto">
+      {/* mobile: card list (the table is hard to scan on a phone) */}
+      <div className="space-y-2.5 sm:hidden">
+        {rows.map((r) => (
+          <ScreenerCard key={r.t} r={r} />
+        ))}
+      </div>
+
+      {/* desktop: table */}
+      <div className="hidden overflow-x-auto sm:block">
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="border-y border-zinc-800">
@@ -185,10 +215,52 @@ export default function Screener({ rows: allRows, universe }: { rows: ScreenerRo
             ))}
           </tbody>
         </table>
-        {rows.length === 0 ? (
-          <div className="py-16 text-center text-sm text-zinc-500">Tidak ada saham yang cocok.</div>
-        ) : null}
       </div>
+
+      {rows.length === 0 ? (
+        <div className="py-16 text-center text-sm text-zinc-500">Tidak ada saham yang cocok.</div>
+      ) : null}
+    </div>
+  );
+}
+
+// Mobile row rendered as a card — same data as a table row, easier to scan on a phone.
+function ScreenerCard({ r }: { r: ScreenerRow }) {
+  return (
+    <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-3.5">
+      <div className="flex items-center justify-between">
+        <span className="font-mono text-base font-semibold text-zinc-100">{r.t}</span>
+        <span className="font-mono tabular-nums text-zinc-200">{fmtInt(r.price)}</span>
+      </div>
+      <div className="mt-3 grid grid-cols-4 gap-2 text-center">
+        <Stat label="%1H">
+          <span className={r.pct >= 0 ? "text-emerald-400" : "text-rose-400"}>{fmtPct(r.pct, 1)}</span>
+        </Stat>
+        <Stat label="RSI">
+          <span className={r.rsi >= 70 ? "text-amber-400" : r.rsi <= 30 ? "text-rose-400" : "text-zinc-300"}>{r.rsi}</span>
+        </Stat>
+        <Stat label="Trend">
+          <span className={r.trend === "bull" ? "text-emerald-400" : "text-rose-400"}>{r.trend === "bull" ? "Bull" : "Bear"}</span>
+        </Stat>
+        <Stat label="Mom">
+          <span className={r.mom >= 0 ? "text-emerald-400" : "text-rose-400"}>{fmtPct(r.mom, 1)}</span>
+        </Stat>
+      </div>
+      <div className="mt-3 flex items-center justify-between border-t border-zinc-800/60 pt-3">
+        <SignalChip sig={r.sig} />
+        <span className="flex items-center gap-1.5 text-xs text-zinc-500">
+          vs IHSG <VsChip vs={r.vs} />
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function Stat({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="text-[10px] uppercase tracking-wider text-zinc-600">{label}</div>
+      <div className="mt-0.5 font-mono text-sm tabular-nums">{children}</div>
     </div>
   );
 }

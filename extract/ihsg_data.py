@@ -45,13 +45,17 @@ def extract_ihsg(start_date: str = None, end_date: str = None) -> pd.DataFrame:
 
     print(f"[IHSG] Extracting data from {start_date} to {end_date}")
 
+    # yfinance treats `end` as EXCLUSIVE, so end=today would drop today's own
+    # bar. Bump it by one day so the requested end_date is actually included.
+    end_query = (datetime.strptime(end_date, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
+
     all_records = []
 
     for ticker, name in TICKERS.items():
         try:
             print(f"[IHSG] Downloading {ticker} ({name}) ...")
             t = yf.Ticker(ticker)
-            hist = t.history(start=start_date, end=end_date)
+            hist = t.history(start=start_date, end=end_query)
 
             if hist.empty:
                 print(f"[IHSG] WARNING: No data returned for {ticker}, skipping.")
